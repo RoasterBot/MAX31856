@@ -1,0 +1,7 @@
+{
+"name": "MAX31856",
+"author": "RoasterBot <roaster@lockhouse.coffee>",
+"license": "CC BY-SA 3.0",
+"version": "0.0.9",
+"description": "Logic to control readings from thermocouple to Photon and beyond."
+}
