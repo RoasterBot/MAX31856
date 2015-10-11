@@ -40,6 +40,23 @@
 // 25 June 2015        Initial Version
 // 31 July 2015        Fixed spelling and formatting problems
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+        PIN Mappings (perhaps not optimal)
+
+        DUAL MAX31865       ARDUIO UNO REV 3
+        -------------------------------------
+        V+                  5V
+        GND                 GND  
+        SD0                 D6~
+        CS0                 D4
+        CS1                 D7
+        SD1                 D5
+        SCK                 D3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+
 #include "Arduino.h"   //asdasdasd
 #include <MAX31856.h>
 
