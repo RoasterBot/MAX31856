@@ -38,27 +38,31 @@
 // 25 June 2015        Initial Version
 // 31 July 2015        Fixed spelling and formatting problems
 
+#include "Arduino.h"
 #include	"MAX31856.h"
 
 
 // Define which pins are connected to the MAX31856.  The DRDY and FAULT outputs
 // from the MAX31856 are not used in this library.
-MAX31856::MAX31856(int sdi, int sdo, int cs, int clk)
+MAX31856::MAX31856(int sdi, int sdo, int cs, int cs2, int clk)
 {
     _sdi = sdi;
     _sdo = sdo;
-    _cs = cs;
+    _cs  = cs;
+    _cs2 = cs2;
     _clk = clk;
 
     // Initialize all the data pins
     pinMode(_sdi, OUTPUT);
     pinMode(_cs, OUTPUT);
+    pinMode(_cs2, OUTPUT);
     pinMode(_clk, OUTPUT);
     // Use a pullup on the data line to be able to detect "no communication"
     pinMode(_sdo, INPUT_PULLUP);
 
     // Default output pins state
     digitalWrite(_cs, HIGH);
+    digitalWrite(_cs2, HIGH);
     digitalWrite(_clk, HIGH);
 
     // Set up the shadow registers with the default values
@@ -69,14 +73,15 @@ MAX31856::MAX31856(int sdi, int sdo, int cs, int clk)
 
 
 // Write the given data to the MAX31856 register
-void MAX31856::writeRegister(byte registerNum, byte data)
+void MAX31856::writeRegister(byte registerNum, byte data, int cs_num)
 {
     // Sanity check on the register number
     if (registerNum >= NUM_REGISTERS)
         return;
 
     // Select the MAX31856 chip
-    digitalWrite(_cs, LOW);
+    //digitalWrite(_cs, LOW);
+    digitalWrite(cs_num, LOW);
 
     // Write the register number, with the MSB set to indicate a write
     writeByte(WRITE_OPERATION(registerNum));
@@ -85,7 +90,7 @@ void MAX31856::writeRegister(byte registerNum, byte data)
     writeByte(data);
 
     // Deselect MAX31856 chip
-    digitalWrite(_cs, HIGH);
+    digitalWrite(cs_num, HIGH);
 
     // Save the register value, in case the registers need to be restored
     _registers[registerNum] = data;
@@ -96,13 +101,14 @@ void MAX31856::writeRegister(byte registerNum, byte data)
 // the conversion takes place in the background within 155 ms, or longer depending on the
 // number of samples in each reading (see CR1).
 // Returns the temperature, or an error (FAULT_OPEN, FAULT_VOLTAGE or NO_MAX31856)
-double	MAX31856::readThermocouple(byte unit)
+double	MAX31856::readThermocouple(byte unit, int cs_num)
 {
     double temperature;
     long data;
 
     // Select the MAX31856 chip
-    digitalWrite(_cs, LOW);
+    //digitalWrite(_cs, LOW);
+    digitalWrite(cs_num, LOW);
 
     // Read data starting with register 0x0c
     writeByte(READ_OPERATION(0x0c));
@@ -111,7 +117,7 @@ double	MAX31856::readThermocouple(byte unit)
     data = readData();
 
     // Deselect MAX31856 chip
-    digitalWrite(_cs, HIGH);
+    digitalWrite(cs_num, HIGH);
 
     // If there is no communication from the IC then data will be all 1's because
     // of the internal pullup on the data line (INPUT_PULLUP)
@@ -120,7 +126,7 @@ double	MAX31856::readThermocouple(byte unit)
 
     // If the value is zero then the temperature could be exactly 0.000 (rare), or
     // the IC's registers are uninitialized.
-    if (data == 0 && verifyMAX31856() == NO_MAX31856)
+    if (data == 0 && verifyMAX31856(cs_num) == NO_MAX31856)
         return NO_MAX31856;
 
     // Was there an error?
@@ -150,13 +156,14 @@ double	MAX31856::readThermocouple(byte unit)
 // Read the junction (IC) temperature either in Degree Celsius or Fahrenheit.
 // This routine also makes sure that communication with the MAX31856 is working and
 // will return NO_MAX31856 if not.
-double	MAX31856::readJunction(byte unit)
+double	MAX31856::readJunction(byte unit, int cs_num)
 {
     double temperature;
     long data, temperatureOffset;
 
     // Select the MAX31856 chip
-    digitalWrite(_cs, LOW);
+    //digitalWrite(_cs, LOW);
+    digitalWrite(cs_num, LOW);
 
     // Read data starting with register 8
     writeByte(READ_OPERATION(8));
@@ -165,7 +172,8 @@ double	MAX31856::readJunction(byte unit)
     data = readData();
 
     // Deselect MAX31856 chip
-    digitalWrite(_cs, HIGH);
+    //digitalWrite(_cs, HIGH);
+    digitalWrite(cs_num, HIGH);
 
     // If there is no communication from the IC then data will be all 1's because
     // of the internal pullup on the data line (INPUT_PULLUP)
@@ -174,7 +182,7 @@ double	MAX31856::readJunction(byte unit)
 
     // If the value is zero then the temperature could be exactly 0.000 (rare), or
     // the IC's registers are uninitialized.
-    if (data == 0 && verifyMAX31856() == NO_MAX31856)
+    if (data == 0 && verifyMAX31856(cs_num) == NO_MAX31856)
         return NO_MAX31856;
 
     // Register 9 is the temperature offset
@@ -210,12 +218,13 @@ double	MAX31856::readJunction(byte unit)
 
 // When the MAX31856 is uninitialzed and either the junction or thermocouple temperature is read it will return 0.
 // This is a valid temperature, but could indicate that the registers need to be initialized.
-double MAX31856::verifyMAX31856()
+double MAX31856::verifyMAX31856(int cs_num)
 {
     long data, reg;
 
     // Select the MAX31856 chip
-    digitalWrite(_cs, LOW);
+    //digitalWrite(_cs, LOW);
+    digitalWrite(cs_num, LOW);
 
     // Read data starting with register 0
     writeByte(READ_OPERATION(0));
@@ -224,7 +233,8 @@ double MAX31856::verifyMAX31856()
     data = readData();
 
     // Deselect MAX31856 chip
-    digitalWrite(_cs, HIGH);
+    //digitalWrite(_cs, HIGH);
+    digitalWrite(cs_num, HIGH);
 
     // If there is no communication from the IC then data will be all 1's because
     // of the internal pullup on the data line (INPUT_PULLUP)
@@ -238,7 +248,8 @@ double MAX31856::verifyMAX31856()
 
     // Communication to the IC is working, but the register values are not correct
     // Select the MAX31856 chip
-    digitalWrite(_cs, LOW);
+    //digitalWrite(_cs, LOW);
+    digitalWrite(cs_num, LOW);
 
     // Start writing from register 0
     writeByte(WRITE_OPERATION(0));
@@ -248,7 +259,8 @@ double MAX31856::verifyMAX31856()
         writeByte(_registers[i]);
 
     // Deselect MAX31856 chip
-    digitalWrite(_cs, HIGH);
+    //digitalWrite(_cs, HIGH);
+    digitalWrite(cs_num, HIGH);
 
     // For now, return an error but soon valid temperatures will be returned
     return NO_MAX31856;

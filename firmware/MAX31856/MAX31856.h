@@ -15,6 +15,9 @@
 // 25 June 2015        Initial Version
 // 31 July 2015        Fixed spelling and formatting problems
 
+
+//me 10-11-15
+
 #ifndef MAX31856_H
 #define MAX31856_H
 
@@ -84,17 +87,17 @@
 class	MAX31856
 {
 public:
-    MAX31856(int, int, int, int);           // SDI, SDO, CS, CLK (DRDY and FAULT are not used)
+    MAX31856(int, int, int, int, int);           // SDI, SDO, CS, CLK (DRDY and FAULT are not used)
 
-    void    writeRegister(byte, byte);
-    double  readThermocouple(byte unit);
-    double  readJunction(byte unit);
+    void    writeRegister(byte, byte, int);
+    double  readThermocouple(byte unit, int cs_num);
+    double  readJunction(byte unit, int cs_num);
 
 private:
     long    readData();
     void    writeByte(byte);
-    double  verifyMAX31856();
-    int     _sdi, _sdo, _cs, _clk;
+    double  verifyMAX31856(int);
+    int     _sdi, _sdo, _cs, _cs2, _clk;
     byte    _registers[NUM_REGISTERS];      // Shadow registers.  Registers can be restored if power to MAX31855 is lost
 };
 
