@@ -89,7 +89,7 @@ class	MAX31856
 public:
     MAX31856(int, int, int, int, int);           // SDI, SDO, CS, CLK (DRDY and FAULT are not used)
 
-    void    writeRegister(byte, byte, int);
+    void    writeRegister(byte, byte, int, int);
     double  readThermocouple(byte unit, int cs_num);
     double  readJunction(byte unit, int cs_num);
 

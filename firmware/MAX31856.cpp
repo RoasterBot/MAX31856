@@ -39,7 +39,7 @@
 // 31 July 2015        Fixed spelling and formatting problems
 
 #include "Arduino.h"
-#include	"MAX31856.h"
+#include    "MAX31856.h"
 
 
 // Define which pins are connected to the MAX31856.  The DRDY and FAULT outputs
@@ -73,7 +73,7 @@ MAX31856::MAX31856(int sdi, int sdo, int cs, int cs2, int clk)
 
 
 // Write the given data to the MAX31856 register
-void MAX31856::writeRegister(byte registerNum, byte data, int cs_num)
+void MAX31856::writeRegister(byte registerNum, byte data, int cs, int cs2)
 {
     // Sanity check on the register number
     if (registerNum >= NUM_REGISTERS)
@@ -81,7 +81,9 @@ void MAX31856::writeRegister(byte registerNum, byte data, int cs_num)
 
     // Select the MAX31856 chip
     //digitalWrite(_cs, LOW);
-    digitalWrite(cs_num, LOW);
+    digitalWrite(cs, LOW);
+    digitalWrite(cs2, LOW);
+
 
     // Write the register number, with the MSB set to indicate a write
     writeByte(WRITE_OPERATION(registerNum));
@@ -90,7 +92,9 @@ void MAX31856::writeRegister(byte registerNum, byte data, int cs_num)
     writeByte(data);
 
     // Deselect MAX31856 chip
-    digitalWrite(cs_num, HIGH);
+    digitalWrite(cs, HIGH);
+    digitalWrite(cs2, HIGH);
+
 
     // Save the register value, in case the registers need to be restored
     _registers[registerNum] = data;
@@ -101,7 +105,7 @@ void MAX31856::writeRegister(byte registerNum, byte data, int cs_num)
 // the conversion takes place in the background within 155 ms, or longer depending on the
 // number of samples in each reading (see CR1).
 // Returns the temperature, or an error (FAULT_OPEN, FAULT_VOLTAGE or NO_MAX31856)
-double	MAX31856::readThermocouple(byte unit, int cs_num)
+double  MAX31856::readThermocouple(byte unit, int cs_num)
 {
     double temperature;
     long data;
@@ -142,7 +146,7 @@ double	MAX31856::readThermocouple(byte unit, int cs_num)
 
         // Convert to Celsius
         temperature = (double) data * 0.0078125;
-	
+    
         // Convert to Fahrenheit if desired
         if (unit == FAHRENHEIT)
             temperature = (temperature * 9.0/5.0)+ 32;
@@ -156,7 +160,7 @@ double	MAX31856::readThermocouple(byte unit, int cs_num)
 // Read the junction (IC) temperature either in Degree Celsius or Fahrenheit.
 // This routine also makes sure that communication with the MAX31856 is working and
 // will return NO_MAX31856 if not.
-double	MAX31856::readJunction(byte unit, int cs_num)
+double  MAX31856::readJunction(byte unit, int cs_num)
 {
     double temperature;
     long data, temperatureOffset;
@@ -206,7 +210,7 @@ double	MAX31856::readJunction(byte unit, int cs_num)
 
     // Convert to Celsius
     temperature *= 0.015625;
-	
+    
     // Convert to Fahrenheit if desired
     if (unit == FAHRENHEIT)
         temperature = (temperature * 9.0/5.0)+ 32;
@@ -273,7 +277,7 @@ long MAX31856::readData()
 {
     long data = 0;
     unsigned long bitMask = 0x80000000;
-	
+    
     // Shift in 32 bits of data
     while (bitMask)
     {
@@ -287,7 +291,7 @@ long MAX31856::readData()
 
         bitMask >>= 1;
     }
-	
+    
     return(data);
 }
 
