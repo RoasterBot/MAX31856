@@ -59,7 +59,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
-//#include "Arduino.h"   
+#include "Arduino.h"   
 #include <MAX31856.h>
 
 // This sample code works with this breakout board:
