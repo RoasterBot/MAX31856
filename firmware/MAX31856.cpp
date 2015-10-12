@@ -38,8 +38,8 @@
 // 25 June 2015        Initial Version
 // 31 July 2015        Fixed spelling and formatting problems
 
-#include "Arduino.h"
-#include    "MAX31856.h"
+//#include  "Arduino.h"
+#include  "MAX31856.h"
 
 
 // Define which pins are connected to the MAX31856.  The DRDY and FAULT outputs
